@@ -1,0 +1,26 @@
+#DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution & packaging
+.Python
+venv/
+.venv
+.env
+
+# Installer logs
+pip-log.txt
+
+# Test reports
+.cache
+.pytest_cache/
+
+# VScode tools
+.vscode
+
+# Unimportant files
+README copy.md
+
+# Migration info
+migrations/

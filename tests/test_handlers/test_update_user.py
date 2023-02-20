@@ -110,6 +110,7 @@ async def test_update_user_check_only_one_updated(
         ),
         (
             {"name": "333"},
+            422,
             {
                 "detail": [
                     {

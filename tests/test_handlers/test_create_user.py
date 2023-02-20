@@ -8,6 +8,7 @@ async def test_create_user(client, get_user_from_database):
         "name": "Randvi",
         "surname": "Jarlscona",
         "email": "jarlscona_raven@clan.com",
+        "password": "Test2373",
     }
     resp = client.post("/user/", data=json.dumps(user_data))
     data_from_resp = resp.json()
@@ -27,11 +28,17 @@ async def test_create_user(client, get_user_from_database):
 
 
 async def test_create_user_duplicate_mail(client, get_user_from_database):
-    user_data = {"name": "Ivar", "surname": "Boneless", "email": "ragnar@warrior.com"}
+    user_data = {
+        "name": "Ivar",
+        "surname": "Boneless",
+        "email": "ragnar@warrior.com",
+        "password": "Test2373",
+    }
     duplicate_mail_user_data = {
         "name": "Ubba",
         "surname": "Fairfull",
         "email": "ragnar@warrior.com",
+        "password": "Test2376",
     }
     resp = client.post("/user/", data=json.dumps(user_data))
     data_from_resp = resp.json()
@@ -80,6 +87,11 @@ async def test_create_user_duplicate_mail(client, get_user_from_database):
                         "msg": "field required",
                         "type": "value_error.missing",
                     },
+                    {
+                        "loc": ["body", "password"],
+                        "msg": "field required",
+                        "type": "value_error.missing",
+                    },
                 ]
             },
         ),
@@ -102,7 +114,12 @@ async def test_create_user_duplicate_mail(client, get_user_from_database):
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address",
                         "type": "value_error.email",
-                    }
+                    },
+                    {
+                        "loc": ["body", "password"],
+                        "msg": "field required",
+                        "type": "value_error.missing",
+                    },
                 ]
             },
         ),

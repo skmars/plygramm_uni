@@ -15,6 +15,7 @@ from api.models import UpdateUserRequest
 from api.models import UpdateUserResponse
 from db.crud import UserCRUD
 from db.session import get_db
+from hashing import Hasher
 
 logger = getLogger(__name__)
 
@@ -24,7 +25,7 @@ user_router = APIRouter()
 # Handlers and input points for user auth #
 ############################################
 
-# TODO Separete points and handlers
+# TODO Separate points and handlers
 
 # Handlers
 
@@ -37,6 +38,7 @@ async def _create_new_user(body: CreateUser, db) -> ShowUser:
                 name=body.name,
                 surname=body.surname,
                 email=body.email,
+                hashed_password=Hasher.set_password_hashed(body.password),
             )
             return ShowUser(
                 user_id=user.user_id,
@@ -82,7 +84,7 @@ async def _update_user(
             return updated_user_id
 
 
-# Input points #
+# Endpoints #
 
 
 @user_router.post("/", response_model=ShowUser)

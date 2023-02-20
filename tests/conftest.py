@@ -33,10 +33,11 @@ def event_loop():
 async def run_migrations():
     os.chdir(f"{HOME_DIRECTORY}/tests")
     os.system(f"{HOME_DIRECTORY}/venv/bin/alembic --version")
-    os.system(f"{HOME_DIRECTORY}/venv/bin/alembic init migrations")
+    # uncomment while first run
+    # os.system(f"{HOME_DIRECTORY}/venv/bin/alembic init migrations")
     os.system(
-        f"{HOME_DIRECTORY}\
-            /venv/bin/alembic revision --autogenerate -m 'running test migrations'"
+        f"{HOME_DIRECTORY}/venv/bin/alembic"
+        f"revision --autogenerate -m 'running test migrations'"
     )
     os.system(f"{HOME_DIRECTORY}/venv/bin/alembic upgrade heads")
 

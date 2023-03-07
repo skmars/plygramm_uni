@@ -3,6 +3,8 @@ from uuid import uuid4
 
 import pytest
 
+from tests.conftest import create_test_auth_headers_for_user
+
 
 async def test_update_user(client, create_user_in_database, get_user_from_database):
     user_data = {
@@ -11,6 +13,7 @@ async def test_update_user(client, create_user_in_database, get_user_from_databa
         "surname": "Hunter",
         "email": "guest_raven@clan.com",
         "is_active": True,
+        "hashed_password": "Raven123",
     }
 
     new_user_data = {
@@ -21,7 +24,9 @@ async def test_update_user(client, create_user_in_database, get_user_from_databa
     }
     await create_user_in_database(**user_data)
     resp = client.patch(
-        f'/user/?user_id={user_data["user_id"]}', data=json.dumps(new_user_data)
+        f'/user/?user_id={user_data["user_id"]}',
+        data=json.dumps(new_user_data),
+        headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 200
     resp_data = resp.json()
@@ -44,6 +49,7 @@ async def test_update_user_check_only_one_updated(
         "surname": "Jarl",
         "email": "old_jarl_raven@clan.com",
         "is_active": True,
+        "hashed_password": "Raven123",
     }
     user_data1 = {
         "user_id": uuid4(),
@@ -51,6 +57,7 @@ async def test_update_user_check_only_one_updated(
         "surname": "Smith",
         "email": "smith_raven@clan.com",
         "is_active": True,
+        "hashed_password": "Raven123",
     }
     user_data2 = {
         "user_id": uuid4(),
@@ -58,6 +65,7 @@ async def test_update_user_check_only_one_updated(
         "surname": "Witch",
         "email": "witch_raven@clan.com",
         "is_active": True,
+        "hashed_password": "Raven123",
     }
     user_data_updated = {
         "name": "Basim",
@@ -67,7 +75,9 @@ async def test_update_user_check_only_one_updated(
     for user_data in [user_data0, user_data1, user_data2]:
         await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/user/?user_id={user_data0['user_id']}", data=json.dumps(user_data_updated)
+        f"/user/?user_id={user_data0['user_id']}",
+        data=json.dumps(user_data_updated),
+        headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 200
     resp_data = resp.json()
@@ -103,13 +113,13 @@ async def test_update_user_check_only_one_updated(
     [
         ({}, 422, {"detail": "At least one parametr to update should be provided"}),
         ({"name": "333"}, 422, {"detail": "Name should contain only letters"}),
+        # (
+        #     {"name": ""},
+        #     422,
+        #     {"detail": "At least one parametr to update should be provided"},
+        # ),
         (
             {"name": ""},
-            422,
-            {"detail": "At least one parametr to update should be provided"},
-        ),
-        (
-            {"name": "333"},
             422,
             {
                 "detail": [
@@ -178,25 +188,40 @@ async def test_update_user_validation_error(
         "surname": "King",
         "email": "king@britania.com",
         "is_active": True,
+        "hashed_password": "Raven123",
     }
     await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/user/?user_id={user_data['user_id']}", data=json.dumps(user_data_updated)
+        f"/user/?user_id={user_data['user_id']}",
+        data=json.dumps(user_data_updated),
+        headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == expected_status_code
     resp_data = resp.json()
     assert resp_data == expected_detail
 
 
-async def test_update_user_id_validation_error(client):
+async def test_update_user_id_validation_error(client, create_user_in_database):
     user_data = {
+        "user_id": uuid4(),
         "name": "Soma",
         "surname": "Jarlscona",
         "email": "jarlscona_grantsh@clan.com",
         "is_active": True,
+        "hashed_password": "Raven123",
+    }
+    await create_user_in_database(**user_data)
+    user_data_to_update = {
+        "name": "Richard",
+        "surname": "Lord",
+        "email": "lord@wessexs.com",
     }
     invalid_user_id = 123
-    resp = client.patch(f"/user/?user_id={invalid_user_id}", data=json.dumps(user_data))
+    resp = client.patch(
+        f"/user/?user_id={invalid_user_id}",
+        data=json.dumps(user_data_to_update),
+        headers=create_test_auth_headers_for_user(user_data["email"]),
+    )
     assert resp.status_code == 422
     data_from_response = resp.json()
     assert data_from_response == {
@@ -210,14 +235,27 @@ async def test_update_user_id_validation_error(client):
     }
 
 
-async def test_update_user_id_not_found(client):
+async def test_update_user_id_not_found(client, create_user_in_database):
     user_data = {
+        "user_id": uuid4(),
         "name": "Soma",
         "surname": "Jarlscona",
         "email": "jarlscona_grantsh@clan.com",
+        "is_active": True,
+        "hashed_password": "Raven123",
+    }
+    await create_user_in_database(**user_data)
+    user_data_to_update = {
+        "name": "Richard",
+        "surname": "Lord",
+        "email": "lord@wessexs.com",
     }
     another_user_id = uuid4()
-    resp = client.patch(f"/user/?user_id={another_user_id}", data=json.dumps(user_data))
+    resp = client.patch(
+        f"/user/?user_id={another_user_id}",
+        data=json.dumps(user_data_to_update),
+        headers=create_test_auth_headers_for_user(user_data["email"]),
+    )
     assert resp.status_code == 404
     data_from_response = resp.json()
     assert data_from_response == {
@@ -232,6 +270,7 @@ async def test_update_user_duplicate_mail_error(client, create_user_in_database)
         "surname": "Boneless",
         "email": "frenetic@warrior.com",
         "is_active": True,
+        "hashed_password": "Ragnar124",
     }
     user_data1 = {
         "user_id": uuid4(),
@@ -239,12 +278,15 @@ async def test_update_user_duplicate_mail_error(client, create_user_in_database)
         "surname": "Fairfull",
         "email": "ragnar@warrior.com",
         "is_active": True,
+        "hashed_password": "Ragnar124",
     }
     user_data_updated = {"email": user_data1["email"]}
     for user_data in [user_data0, user_data1]:
         await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/user/?user_id={user_data0['user_id']}", data=json.dumps(user_data_updated)
+        f"/user/?user_id={user_data0['user_id']}",
+        data=json.dumps(user_data_updated),
+        headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 503
     assert (

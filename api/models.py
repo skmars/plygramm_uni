@@ -13,8 +13,8 @@ LETTER_MATCH_PATTERN = re.compile(r"^[a-z-A-Z\-]+$")
 
 # Adjust class to make sure pydantic will convert even non dict objects to json
 class AdjustPydanticModel(BaseModel):
-
-    orm_mode = True
+    class Config:
+        orm_mode = True
 
 
 # class as a response model to be shown to user

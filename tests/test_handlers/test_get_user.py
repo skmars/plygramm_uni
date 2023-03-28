@@ -1,9 +1,10 @@
 from uuid import uuid4
 
+from db.models import UserRole
 from tests.conftest import create_test_auth_headers_for_user
 
 
-async def test_get_user(client, create_user_in_database, get_user_from_database):
+async def test_get_user(client, create_user_in_database):
     user_data = {
         "user_id": uuid4(),
         "name": "Soma",
@@ -11,6 +12,7 @@ async def test_get_user(client, create_user_in_database, get_user_from_database)
         "email": "jarlscona_grantsh@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     await create_user_in_database(**user_data)
     resp = client.get(
@@ -33,10 +35,11 @@ async def test_get_user_id_validation_error(client, create_user_in_database):
         "email": "jarlscona_grantsh@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     invalid_user_id = 123
     await create_user_in_database(**user_data)
-    resp = client.delete(
+    resp = client.get(
         f"/user/?user_id={invalid_user_id}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -61,10 +64,11 @@ async def test_get_user_id_not_found(client, create_user_in_database):
         "email": "jarlscona_grantsh@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     another_user_id = uuid4()
     await create_user_in_database(**user_data)
-    resp = client.delete(
+    resp = client.get(
         f"/user/?user_id={another_user_id}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )

@@ -3,10 +3,31 @@ from uuid import uuid4
 
 import pytest
 
+from db.models import UserRole
 from tests.conftest import create_test_auth_headers_for_user
 
 
-async def test_update_user(client, create_user_in_database, get_user_from_database):
+@pytest.mark.parametrize(
+    "user_roles",
+    [
+        [
+            UserRole.ROLE_USER_SIMPLE,
+            UserRole.ROLE_USER_SUPERADMIN,
+        ],
+        [
+            UserRole.ROLE_USER_SUPERADMIN,
+        ],
+        [
+            UserRole.ROLE_USER_ADMIN,
+        ],
+        [
+            UserRole.ROLE_USER_SIMPLE,
+        ],
+    ],
+)
+async def test_update_user(
+    client, create_user_in_database, get_user_from_database, user_roles
+):
     user_data = {
         "user_id": uuid4(),
         "name": "Richard",
@@ -14,6 +35,7 @@ async def test_update_user(client, create_user_in_database, get_user_from_databa
         "email": "guest_raven@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": user_roles,
     }
 
     new_user_data = {
@@ -50,6 +72,7 @@ async def test_update_user_check_only_one_updated(
         "email": "old_jarl_raven@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     user_data1 = {
         "user_id": uuid4(),
@@ -58,6 +81,7 @@ async def test_update_user_check_only_one_updated(
         "email": "smith_raven@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     user_data2 = {
         "user_id": uuid4(),
@@ -66,6 +90,7 @@ async def test_update_user_check_only_one_updated(
         "email": "witch_raven@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     user_data_updated = {
         "name": "Basim",
@@ -189,6 +214,7 @@ async def test_update_user_validation_error(
         "email": "king@britania.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     await create_user_in_database(**user_data)
     resp = client.patch(
@@ -209,6 +235,7 @@ async def test_update_user_id_validation_error(client, create_user_in_database):
         "email": "jarlscona_grantsh@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     await create_user_in_database(**user_data)
     user_data_to_update = {
@@ -243,6 +270,7 @@ async def test_update_user_id_not_found(client, create_user_in_database):
         "email": "jarlscona_grantsh@clan.com",
         "is_active": True,
         "hashed_password": "Raven123",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     await create_user_in_database(**user_data)
     user_data_to_update = {
@@ -271,6 +299,7 @@ async def test_update_user_duplicate_mail_error(client, create_user_in_database)
         "email": "frenetic@warrior.com",
         "is_active": True,
         "hashed_password": "Ragnar124",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     user_data1 = {
         "user_id": uuid4(),
@@ -279,6 +308,7 @@ async def test_update_user_duplicate_mail_error(client, create_user_in_database)
         "email": "ragnar@warrior.com",
         "is_active": True,
         "hashed_password": "Ragnar124",
+        "roles": [UserRole.ROLE_USER_SIMPLE],
     }
     user_data_updated = {"email": user_data1["email"]}
     for user_data in [user_data0, user_data1]:

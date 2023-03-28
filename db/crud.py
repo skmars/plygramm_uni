@@ -7,6 +7,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import User
+from .models import UserRole
 
 ##########################################
 #  CRUD-Class operations to deal with DB #
@@ -23,9 +24,14 @@ class UserCRUD:
         surname: str,
         email: str,
         hashed_password: str,
+        roles: list[UserRole],
     ) -> User:
         new_user = User(
-            name=name, surname=surname, email=email, hashed_password=hashed_password
+            name=name,
+            surname=surname,
+            email=email,
+            hashed_password=hashed_password,
+            roles=roles,
         )
         self.db_session.add(new_user)
         await self.db_session.flush()

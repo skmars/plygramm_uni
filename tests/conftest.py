@@ -13,6 +13,7 @@ from sqlalchemy.sql import text
 from starlette.testclient import TestClient
 
 import settings
+from db.models import UserRole
 from db.session import get_db
 from main import app
 from security import create_access_token
@@ -38,7 +39,7 @@ async def run_migrations():
     # uncomment while first run
     # os.system(f"{HOME_DIRECTORY}/venv/bin/alembic init migrations")
     os.system(
-        f"{HOME_DIRECTORY}/venv/bin/alembic"
+        f"{HOME_DIRECTORY}/venv/bin/alembic "
         f"revision --autogenerate -m 'running test migrations'"
     )
     os.system(f"{HOME_DIRECTORY}/venv/bin/alembic upgrade heads")
@@ -118,16 +119,18 @@ async def create_user_in_database(asyncpg_pool):
         email: str,
         is_active: bool,
         hashed_password: str,
+        roles: list[UserRole],
     ):
         async with asyncpg_pool.acquire() as connection:
             return await connection.execute(
-                """INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6);""",
+                """INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6, $7);""",
                 user_id,
                 name,
                 surname,
                 email,
                 is_active,
                 hashed_password,
+                roles,
             )
 
     return create_user_in_database

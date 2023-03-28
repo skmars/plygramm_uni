@@ -5,8 +5,8 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi import HTTPException
 
-from api.models import CreateUser
-from api.models import ShowUser
+from api.schemas import CreateUser
+from api.schemas import ShowUser
 from db.crud import User
 from db.crud import UserCRUD
 from db.models import UserRole
